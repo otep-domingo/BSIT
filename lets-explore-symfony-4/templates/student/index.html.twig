@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ProductController!
+{% endblock %}
+
+{% block body %}
+
+
+	<div class="example-wrapper">
+		<h1>Students</h1>
+
+<td><a href="{{path('new_student')}}" class="btn btn-dark">New student</a></td>
+		<table class="table">
+			<tr>
+				<th>ID</th>
+				<th>Lastname</th>
+				<th>Firstname</th>
+				<th>Age</th>
+				<th>Course</th>
+			</tr>
+
+			{% for s in student %}
+				<tr>
+					<td>{{s.id}}</td>
+					<td>{{s.lastname}}</td>
+					<td>{{s.firstname}}</td>
+					<td>{{s.age}}</td>
+					<td>{{s.course}}</td>
+
+				</tr>
+			{% else %}
+				<div style="margin: auto;
+					  width: 50%;
+					  padding: 10px;
+					  background-color:red;
+					  width:80%;">No records found</div>
+			{% endfor %}
+		</table>
+	</div>
+{% endblock %}
