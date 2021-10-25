@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %} 
+{% block stylesheets %} 
+<style> 
+    
+</style> 
+
+{% endblock %}  
+   {% block body %} 
+   <h3>Student details:</h3> 
+   <div id="simpleform"> 
+      {{ form_start(form) }} 
+      {{ form_widget(form) }} 
+      {{ form_end(form) }} 
+   </div> 
+{% endblock %}  

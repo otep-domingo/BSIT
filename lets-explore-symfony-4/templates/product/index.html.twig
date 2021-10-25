@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ProductController!
+{% endblock %}
+
+{% block body %}
+	<style>
+		.example-wrapper {
+			margin: 1em auto;
+			max-width: 800px;
+			width: 95%;
+			font: 18px / 1.5 sans-serif;
+		}
+		.example-wrapper code {
+			background: #F5F5F5;
+			padding: 2px 6px;
+		}
+	</style>
+
+	<div class="example-wrapper">
+		<h1>Products</h1>
+
+		<td><a href="{{path('new_product')}}" class="btn btn-dark">New product</a></td>
+		<table class="table">
+			<tr>
+				<th>Product</th>
+				<th>ID</th>
+				<th>Description</th>
+			</tr>
+
+			{% for p in product %}
+				<tr>
+					<td>{{p.name}}</td>
+					<td>{{p.id}}</td>
+					<td>{{p.description}}</td>
+					<td><a href="{{path('product_show',{id:p.id})}}" class="btn btn-dark">View details</a></td>
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
+{% endblock %}
