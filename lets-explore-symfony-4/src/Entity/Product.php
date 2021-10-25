@@ -32,6 +32,11 @@ class Product
      */
     private $description;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $brochureFilename;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -69,6 +74,18 @@ class Product
     public function setDescription(string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getBrochureFilename(): ?string
+    {
+        return $this->brochureFilename;
+    }
+
+    public function setBrochureFilename(?string $brochureFilename): self
+    {
+        $this->brochureFilename = $brochureFilename;
 
         return $this;
     }

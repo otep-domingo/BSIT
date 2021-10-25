@@ -1,40 +1,40 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProductController!
+{% block title %}
+	{{ product.name }}
 {% endblock %}
 
 {% block body %}
-	<style>
-		.example-wrapper {
-			margin: 1em auto;
-			max-width: 800px;
-			width: 95%;
-			font: 18px / 1.5 sans-serif;
-		}
-		.example-wrapper code {
-			background: #F5F5F5;
-			padding: 2px 6px;
-		}
-	</style>
-
-	<div class="example-wrapper">
-		<h1>Products</h1>
-
-		<table class="table">
-			<tr>
-				<th>Product</th>
-				<th>ID</th>
-				<th>Description</th>
-			</tr>
-
-			{% for p in product %}
-				<tr>
-					<td>{{p.name}}</td>
-					<td>{{p.id}}</td>
-					<td>{{p.description}}</td>
-					<td><a href="{{path('product_show',{id:p.id})}}" class="btn btn-dark">View details</a></td>
-				</tr>
-			{% endfor %}
-		</table>
+	<div class="container">
+		<div>
+			<h1>Product details</h1>
+		</div>
+		<div class="row mt-3 mb-4">
+			<div class="col-md-4">
+				<img src="https://via.placeholder.com/600x400" alt="{{ product.name }}" class="img-fluid">
+			</div>
+			<div class="col-md-8">
+				<table class="table table-striped">
+					<tr>
+						<th>Product name</th>
+						<td>{{ product.name }}</td>
+					</tr>
+					<tr>
+						<th>Price</th>
+						<td>{{ product.price }}</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{ product.description }}</td>
+					</tr>
+					<tr>
+						<th>Attached file</th>
+						<td><a href="{{ path('product_brochure_download',{file:product.brochureFilename})}}">{{ product.brochureFilename }}</a></td>
+					</tr>
+				</table>
+				<a class="btn btn-primary btn-lg " role="button" aria-disabled="false" href="/product">Products list</a>
+				<a class="btn btn-secondary btn-lg " role="button" aria-disabled="false" href="{{path('edit_product',{id:product.id})}}">Edit</a>
+			</div>
+		</div>
 	</div>
 {% endblock %}

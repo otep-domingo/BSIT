@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+{# templates/default/new.html.twig #}
+{% block title %}Hello ProductController!
+{% endblock %}
+
+{% block body %}
+{{ form_start(form) }}
+{{ form_widget(form) }}
+{{ form_end(form) }}
+
+{# 
+form_start - renders the start tag of the form, with enctype
+form_widget - fields, validation errors
+form_end - eng tag of the form + automatic CSRF protection
+
+https://symfony.com/doc/current/form/form_themes.html
+#}
+{% endblock %}
