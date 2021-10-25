@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProductController!
+{% block title %}Products
 {% endblock %}
 
 {% block body %}
@@ -20,20 +20,29 @@
 	<div class="example-wrapper">
 		<h1>Products</h1>
 
-		<td><a href="{{path('new_product')}}" class="btn btn-dark">New product</a></td>
+		<td>
+			<a href="{{path('new_product')}}" class="btn btn-dark">New product</a>
+		</td>
 		<table class="table">
 			<tr>
-				<th>Product</th>
 				<th>ID</th>
+				<th>Product</th>
 				<th>Description</th>
+				<th></th>
+				<th></th>
 			</tr>
 
 			{% for p in product %}
 				<tr>
-					<td>{{p.name}}</td>
 					<td>{{p.id}}</td>
+					<td>{{p.name}}</td>
 					<td>{{p.description}}</td>
-					<td><a href="{{path('product_show',{id:p.id})}}" class="btn btn-dark">View details</a></td>
+					<td>
+						<a href="{{path('product_show',{id:p.id})}}" class="btn btn-dark">Details</a>
+					</td>
+					<td>
+						<a href="{{path('delete_product',{id:p.id})}}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete?')">Delete</a>
+					</td>
 				</tr>
 			{% endfor %}
 		</table>
