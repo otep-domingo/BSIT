@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Product;
@@ -28,9 +29,10 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Filesystem as FilesystemFilesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpKernel\KernelInterface;
+
 class ProductController extends AbstractController
 {
-     /**
+    /**
      * @Route("/", name="app_index")
      */
     public function index()
@@ -48,12 +50,19 @@ class ProductController extends AbstractController
     #[Route('/product', name: 'product')]
     public function index2(): Response
     {
-        $product = $this->getDoctrine()
-            ->getRepository(Product::class)
-            ->findAll();
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+        if (!isset($_SESSION['username'])) {
+            return $this->redirect('login');
+        } else {
+            $product = $this->getDoctrine()
+                ->getRepository(Product::class)
+                ->findAll();
 
-        //return new Response('Check out this greate product: '.$product->getName());
-        return $this->render('product/index.html.twig', ['product' => $product]);
+            //return new Response('Check out this create product: '.$product->getName());
+            return $this->render('product/index.html.twig', ['product' => $product, 'pangalan' => $_SESSION['username']]);
+        }
     }
     /**
      * @Route("/product/new", name="new_product")
@@ -63,8 +72,8 @@ class ProductController extends AbstractController
         $product = new Product();
         $form = $this->createFormBuilder($product)
             ->add('name', TextType::class)
-            ->add('description', TextType::class,array('attr' => array('class'=>'form-control')))
-            ->add('price', TextType::class,array('attr' => array('class'=>'form-control')))
+            ->add('description', TextType::class, array('attr' => array('class' => 'form-control')))
+            ->add('price', TextType::class, array('attr' => array('class' => 'form-control')))
             ->add('brochure', FileType::class, [
                 'label' => 'Brochure (PDF file)',
 
@@ -79,17 +88,21 @@ class ProductController extends AbstractController
                 // in the associated entity, so you can use the PHP constraint classes
                 'constraints' => [
                     new File([
-                        'maxSize' => '1024k', //specify the file size limit, remove if you o not want adding limit
+                        //'maxSize' => '1024k', //specify the file size limit, remove if you o not want adding limit
                         'mimeTypes' => [ //specify the acceptable files to be uploaded
                             'application/pdf',
                             'application/x-pdf',
+                            'image/jpeg',
+                            'image/png',
                         ],
                         'mimeTypesMessage' => 'Please upload a valid PDF document',
                     ])
                 ],
             ])
-            ->add('save', SubmitType::class, array('label' => 'Submit',
-            'attr'=>array('class'=>'btn btn-primary mt-3')))
+            ->add('save', SubmitType::class, array(
+                'label' => 'Submit',
+                'attr' => array('class' => 'btn btn-primary mt-3')
+            ))
             ->getForm();
 
         $form->handleRequest($request);
@@ -104,24 +117,24 @@ class ProductController extends AbstractController
             //uploading
             $brochureFile = $form->get('brochure')->getData();
             //check if brochurefield not required
-            $newFilename="defaultfilename.pdf";
-            if($brochureFile){
-                $originalFilename = pathinfo($brochureFile->getClientOriginalName(),PATHINFO_FILENAME);
+            $newFilename = "defaultfilename.pdf";
+            if ($brochureFile) {
+                $originalFilename = pathinfo($brochureFile->getClientOriginalName(), PATHINFO_FILENAME);
                 //include filename as part of URL
-                $safeFilename=$slugger->slug($originalFilename);
-                $newFilename=$safeFilename.'-'.uniqid().'.'.$brochureFile->guessExtension();
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $brochureFile->guessExtension();
                 //move the file to the directory
-                try{
+                try {
                     $brochureFile->move(
                         //$this->getParameter('brochures_directory'),
-                        '../public/uploads/brochures',//specify here the folder where you want the file to be uploaded
+                        '../public/uploads/brochures', //specify here the folder where you want the file to be uploaded
                         $newFilename
                     );
-                }catch(FileException $e){
+                } catch (FileException $e) {
                     throw new Exception($e);
                 }
             }
-            
+
             //setting the values of the object
             $product->setName($name);
             $product->setPrice($price);
@@ -141,45 +154,47 @@ class ProductController extends AbstractController
     /**
      * @Route("/product/edit/{id}", name="edit_product")
      */
-    public function updtateProduct(int $id,Request $request): Response
+    public function updtateProduct(int $id, Request $request): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
 
         $product = $entityManager->getRepository(Product::class)->find($id);
-        $form=$this->createFormBuilder($product)
-        ->add('name', TextType::class,['data'=>$product->getName()])
-        ->add('description', TextType::class,['data'=>$product->getDescription()])
-        ->add('price', TextType::class,['data'=>$product->getPrice()])
-        ->add('save', SubmitType::class, array('label' => 'Save changes',
-        'attr'=>array('class'=>'btn btn-primary mt-3')))
-        ->getForm();
+        $form = $this->createFormBuilder($product)
+            ->add('name', TextType::class, ['data' => $product->getName()])
+            ->add('description', TextType::class, ['data' => $product->getDescription()])
+            ->add('price', TextType::class, ['data' => $product->getPrice()])
+            ->add('save', SubmitType::class, array(
+                'label' => 'Save changes',
+                'attr' => array('class' => 'btn btn-primary mt-3')
+            ))
+            ->getForm();
         $form->handleRequest($request);
 
-        
+
         if (!$product) {
             throw $this->createNotFoundException(
                 'No product found for id ' . $id
             );
         }
         if ($form->isSubmitted() && $form->isValid()) {
-             //you can fetch the EntityManage via $this->getDoctrine()
-             $entityManager = $this->getDoctrine()->getManager();
-             //get the values into variables
-             $name = $form['name']->getData();
-             $description = $form['description']->getData();
-             $price = $form['price']->getData();
- 
-             $product->setName($name);
-             $product->setPrice($price);
-             $product->setDescription($description);
- 
-             //tell doctrine you want to save the product (no queries yet)
- 
-             //$entityManager->persist($product);
-             $entityManager->flush();
- 
-             //return new Response('Saved new product with id '.$product->getId());
-             return $this->redirectToRoute("product");
+            //you can fetch the EntityManage via $this->getDoctrine()
+            $entityManager = $this->getDoctrine()->getManager();
+            //get the values into variables
+            $name = $form['name']->getData();
+            $description = $form['description']->getData();
+            $price = $form['price']->getData();
+
+            $product->setName($name);
+            $product->setPrice($price);
+            $product->setDescription($description);
+
+            //tell doctrine you want to save the product (no queries yet)
+
+            //$entityManager->persist($product);
+            $entityManager->flush();
+
+            //return new Response('Saved new product with id '.$product->getId());
+            return $this->redirectToRoute("product");
         }
         //option 1: read the form content as submitted via POST
         //https://symfony.com/doc/current/introduction/http_fundamentals.html#step-1-the-client-sends-a-request
@@ -188,8 +203,8 @@ class ProductController extends AbstractController
         //$description=$request->request->get('description');
 
         //option 2: using the symfony way
-        
-        
+
+
         /*$name=$form['name']->getData();
         $description=$form['description']->getData();
 
@@ -197,7 +212,7 @@ class ProductController extends AbstractController
         $product->setName(strval($name));
         $product->setDescription(strval($description));
         $entityManager->flush();*/
-        return $this->render('product/edit.html.twig',array('form' => $form->createView(),));
+        return $this->render('product/edit.html.twig', array('form' => $form->createView(),));
         /*return $this->redirectToRoute('product', [
             'id' => $product->getId()
         ]);*/
@@ -268,29 +283,26 @@ class ProductController extends AbstractController
     /**
      * @Route("/product/download/{file}", name="product_brochure_download")
      */
-    public function downloadAction($file):BinaryFileResponse{
-        //try{
-            //https://mobikul.com/controller-upload-download-files-symfony/
-        //}
-        $tmpFilename=(new Filesystem())->tempnam(sys_get_temp_dir(),'sb_');
-        $tmpFile=fopen($tmpFilename,'wb+');
-        $data = [
-            ['name', 'firstname', 'age'],
-            ['COil', 'Doo', random_int(30, 42)],
-            ['Fab', 'Pot', random_int(30, 42)],
-            ['Glas', 'Dun', random_int(30, 42)],
-        ];
-        foreach ($data as $line) {
-            fputcsv($tmpFile, $line, ';');
+    public function downloadAction($file): Response
+    {
+
+        $location = '../public/uploads/brochures/sample-pdf-61779d63a6a09.pdf'; //set the location of the file
+        $filename = $location . $file;
+        //check if the file exists
+        if (file_exists($filename)) {
+            $response = $this->file($filename);
+        } else {
+            /* $response = json_encode(array(
+            'status' => 404, // success or not?
+            'message' => 'File not found'
+            ));*/
+            $response = '';
+            $this->addFlash(
+                'notice',
+                'Record not found!'
+            );
         }
-        $response = $this->file($tmpFilename, 'dynamic-csv-file.csv');
-        $response->headers->set('Content-type', 'application/csv');
-//https://symfony.com/doc/current/components/filesystem.html
-//https://symfony.com/doc/current/controller/upload_file.html
-//https://www.strangebuzz.com/en/snippets/downloading-of-a-dynamically-generated-file-from-a-symfony-controller
 
-        fclose($tmpFile);
-
-        return $response; 
+        return $response;
     }
 }
