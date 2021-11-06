@@ -37,6 +37,16 @@ class Product
      */
     private $brochureFilename;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $img;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $manufacturer;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -86,6 +96,30 @@ class Product
     public function setBrochureFilename(?string $brochureFilename): self
     {
         $this->brochureFilename = $brochureFilename;
+
+        return $this;
+    }
+
+    public function getImg(): ?string
+    {
+        return $this->img;
+    }
+
+    public function setImg(?string $img): self
+    {
+        $this->img = $img;
+
+        return $this;
+    }
+
+    public function getManufacturer(): ?string
+    {
+        return $this->manufacturer;
+    }
+
+    public function setManufacturer(?string $manufacturer): self
+    {
+        $this->manufacturer = $manufacturer;
 
         return $this;
     }
